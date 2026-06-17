@@ -1,6 +1,7 @@
 import os
 import requests
 from requests.auth import HTTPBasicAuth
+from app.category import detect_category, get_category_id
 
 
 def get_wp_config() -> tuple[str, str, str]:
@@ -20,11 +21,23 @@ def post_to_wordpress(title: str, content: str, status: str = "draft") -> dict:
     wp_url, wp_user, wp_pass = get_wp_config()
     endpoint = f"{wp_url}/wp-json/wp/v2/posts"
 
+    # Auto-detect categories
+    category_names = detect_category(title, content)
+    category_ids = []
+    for name in category_names:
+        cat_id = get_category_id(name, wp_url, wp_user, wp_pass)
+        if cat_id:
+            category_ids.append(cat_id)
+            print(f"   ✅ Category assigned: {name} (ID: {cat_id})")
+
     payload = {
         "title": title,
         "content": content,
         "status": status,
     }
+
+    if category_ids:
+        payload["categories"] = category_ids
 
     response = requests.post(
         endpoint,

@@ -19,11 +19,18 @@ def clean_html(raw_html: str) -> str:
             p.decompose()
 
     blocks = []
+    first_h1_skipped = False
+
     for tag in soup.find_all(["h1", "h2", "h3", "h4", "p", "ul", "ol", "img", "blockquote"]):
         text = tag.get_text(strip=True)
 
+        # Skip the first H1 — it becomes the post title
         if tag.name == "h1":
-            blocks.append(f'<!-- wp:heading {{"level":1}} -->\n<h1>{text}</h1>\n<!-- /wp:heading -->')
+            if not first_h1_skipped:
+                first_h1_skipped = True
+                continue
+            # Any additional H1s get demoted to H2
+            blocks.append(f'<!-- wp:heading -->\n<h2>{text}</h2>\n<!-- /wp:heading -->')
         elif tag.name == "h2":
             blocks.append(f'<!-- wp:heading -->\n<h2>{text}</h2>\n<!-- /wp:heading -->')
         elif tag.name == "h3":
@@ -32,7 +39,6 @@ def clean_html(raw_html: str) -> str:
             blocks.append(f'<!-- wp:heading {{"level":4}} -->\n<h4>{text}</h4>\n<!-- /wp:heading -->')
         elif tag.name == "p":
             if text:
-                # Check if paragraph contains an image
                 img = tag.find("img")
                 if img and img.get("src"):
                     wp_url = upload_image_to_wordpress(img["src"])
