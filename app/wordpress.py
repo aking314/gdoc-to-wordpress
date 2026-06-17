@@ -2,6 +2,7 @@ import os
 import requests
 from requests.auth import HTTPBasicAuth
 from app.category import detect_category, get_category_id
+from app.seo import generate_seo
 
 
 def get_wp_config() -> tuple[str, str, str]:
@@ -30,6 +31,16 @@ def post_to_wordpress(title: str, content: str, status: str = "draft") -> dict:
             category_ids.append(cat_id)
             print(f"   ✅ Category assigned: {name} (ID: {cat_id})")
 
+    # Author
+    author_id = int(os.getenv("WP_AUTHOR_ID", 0)) or None
+    if author_id:
+        print(f"   ✅ Author assigned: Steve (ID: {author_id})")
+
+    # SEO
+    seo = generate_seo(title, content)
+    slug = seo.get("slug", "")
+    meta_description = seo.get("meta_description", "")
+
     payload = {
         "title": title,
         "content": content,
@@ -38,6 +49,17 @@ def post_to_wordpress(title: str, content: str, status: str = "draft") -> dict:
 
     if category_ids:
         payload["categories"] = category_ids
+
+    if author_id:
+        payload["author"] = author_id
+
+    if slug:
+        payload["slug"] = slug
+        print(f"   ✅ Slug set: {slug}")
+
+    if meta_description:
+        payload["wpseo_description"] = meta_description
+        print(f"   ✅ Meta description set")
 
     response = requests.post(
         endpoint,

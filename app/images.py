@@ -10,6 +10,12 @@ def upload_image_to_wordpress(img_src: str) -> str | None:
     wp_pass = os.getenv("WP_APP_PASSWORD", "")
 
     try:
+        # If image is already on the same domain, use it directly
+        site_domain = wp_url.replace("https://", "").replace("http://", "").split("/")[0]
+        if site_domain in img_src:
+            print(f"   ✅ Image already hosted on site, using directly")
+            return img_src
+
         # Handle base64 encoded images
         if img_src.startswith("data:image"):
             header, data = img_src.split(",", 1)
@@ -17,7 +23,7 @@ def upload_image_to_wordpress(img_src: str) -> str | None:
             ext = content_type.split("/")[-1]
             img_data = base64.b64decode(data)
         else:
-            # Handle regular URLs
+            # Handle external URLs
             response = requests.get(img_src, timeout=15)
             if response.status_code != 200:
                 print(f"   ⚠️ Could not download image: {img_src}")
