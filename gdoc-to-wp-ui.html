@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DP Blog Publisher</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:       #0a0a0a;
+      --dark:        #111111;
+      --card:        #1a1a1a;
+      --border:      #2a2a2a;
+      --border-light:#333333;
+      --white:       #ffffff;
+      --gray-400:    #888888;
+      --gray-200:    #cccccc;
+      --green:       #4ade80;
+      --green-dim:   #166534;
+      --red:         #f87171;
+      --red-dim:     #7f1d1d;
+      --yellow:      #facc15;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--black);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--dark);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: -0.3px;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+    }
+
+    .header-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--gray-400);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      border: 1px solid var(--border-light);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* Main */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 56px 24px 80px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 12px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--gray-400);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 12px;
+    }
+
+    /* Form */
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gray-200);
+      margin-bottom: 8px;
+      letter-spacing: 0.2px;
+    }
+
+    label .optional {
+      font-weight: 400;
+      color: var(--gray-400);
+    }
+
+    input[type="text"],
+    input[type="url"],
+    select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border-light);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--white);
+      background: var(--dark);
+      transition: border-color 0.15s;
+      outline: none;
+      appearance: none;
+    }
+
+    input::placeholder {
+      color: #444444;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--green);
+    }
+
+    select option {
+      background: var(--dark);
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: var(--gray-400);
+      pointer-events: none;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .field-row .field {
+      margin-bottom: 0;
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* Button */
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--green);
+      color: var(--black);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: -0.1px;
+    }
+
+    .btn:hover:not(:disabled) { opacity: 0.9; }
+    .btn:active:not(:disabled) { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Progress */
+    .progress {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .progress.show { display: block; }
+
+    .progress-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      margin-bottom: 14px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: #555555;
+      transition: color 0.2s;
+    }
+
+    .step:last-child { border-bottom: none; }
+    .step.active { color: var(--white); }
+    .step.done { color: #555555; }
+    .step.error { color: var(--red); }
+
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border-light);
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .step.active .step-dot {
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
+      animation: blink 1.2s infinite;
+    }
+
+    .step.done .step-dot { background: #333333; }
+    .step.error .step-dot { background: var(--red); }
+
+    .step-check {
+      width: 16px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--green);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .step.done .step-check { opacity: 1; }
+    .step.error .step-check { opacity: 1; color: var(--red); }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Result */
+    .result {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .result.success {
+      display: block;
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.25);
+      color: var(--green);
+    }
+
+    .result.error {
+      display: block;
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+      color: var(--red);
+    }
+
+    .result-title {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .result-body {
+      color: var(--gray-400);
+      font-size: 13px;
+    }
+
+    .result-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    .result-link:hover { opacity: 0.8; }
+
+    /* Info note */
+    .note {
+      font-size: 12px;
+      color: var(--gray-400);
+      line-height: 1.6;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .note strong { color: var(--gray-200); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Digital Position
+  </div>
+  <div class="header-badge">Blog Publisher</div>
+</header>
+
+<main>
+  <div class="container">
+
+    <div class="eyebrow">Internal Tool</div>
+    <h1 class="page-title">Publish a blog post</h1>
+    <p class="page-subtitle">Paste a Google Doc URL — we'll handle formatting, images, categories, and SEO automatically.</p>
+
+    <div class="note">
+      <strong>Before you start:</strong> make sure the Google Doc is shared as "Anyone with the link can view."
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label for="doc-url">Google Doc URL</label>
+        <input
+          type="url"
+          id="doc-url"
+          placeholder="https://docs.google.com/document/d/..."
+        />
+      </div>
+
+      <div class="field">
+        <label for="status">Post status</label>
+        <div class="select-wrap">
+          <select id="status">
+            <option value="draft">Save as draft</option>
+            <option value="publish">Publish immediately</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <button class="btn" id="publish-btn" onclick="publishPost()">
+        Publish to WordPress →
+      </button>
+
+      <!-- Progress -->
+      <div class="progress" id="progress">
+        <div class="progress-label">Running</div>
+
+        <div class="step" id="s1">
+          <div class="step-dot"></div>
+          <span>Fetching Google Doc</span>
+          <div class="step-check">✓</div>
+        </div>
+        <div class="step" id="s2">
+          <div class="step-dot"></div>
+          <span>Cleaning HTML &amp; uploading images</span>
+          <div class="step-check">✓</div>
+        </div>
+        <div class="step" id="s3">
+          <div class="step-dot"></div>
+          <span>Generating SEO &amp; detecting categories</span>
+          <div class="step-check">✓</div>
+        </div>
+        <div class="step" id="s4">
+          <div class="step-dot"></div>
+          <span>Posting to WordPress</span>
+          <div class="step-check">✓</div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="result" id="result">
+        <div class="result-title" id="result-title"></div>
+        <div class="result-body" id="result-body"></div>
+        <a class="result-link" id="result-link" href="#" target="_blank" style="display:none">View in WordPress →</a>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const API = 'http://localhost:8000';
+
+  function setStep(id, state) {
+    const el = document.getElementById(id);
+    el.className = 'step ' + state;
+    if (state === 'error') {
+      el.querySelector('.step-check').textContent = '✗';
+    }
+  }
+
+  function showResult(type, title, body, link) {
+    const el = document.getElementById('result');
+    el.className = 'result ' + type;
+    document.getElementById('result-title').textContent = title;
+    document.getElementById('result-body').textContent = body;
+    const linkEl = document.getElementById('result-link');
+    if (link) {
+      linkEl.href = link;
+      linkEl.style.display = 'inline-flex';
+    } else {
+      linkEl.style.display = 'none';
+    }
+  }
+
+  function reset() {
+    ['s1','s2','s3','s4'].forEach(id => {
+      document.getElementById(id).className = 'step';
+      document.getElementById(id).querySelector('.step-check').textContent = '✓';
+    });
+    document.getElementById('result').className = 'result';
+    document.getElementById('progress').classList.remove('show');
+  }
+
+  async function publishPost() {
+    const url = document.getElementById('doc-url').value.trim();
+    const status = document.getElementById('status').value;
+
+    if (!url) {
+      document.getElementById('doc-url').focus();
+      return;
+    }
+
+    reset();
+
+    const btn = document.getElementById('publish-btn');
+    btn.disabled = true;
+    btn.textContent = 'Publishing…';
+    document.getElementById('progress').classList.add('show');
+
+    setStep('s1', 'active');
+
+    const t1 = setTimeout(() => { setStep('s1','done'); setStep('s2','active'); }, 1800);
+    const t2 = setTimeout(() => { setStep('s2','done'); setStep('s3','active'); }, 4500);
+    const t3 = setTimeout(() => { setStep('s3','done'); setStep('s4','active'); }, 7500);
+
+    try {
+      const body = { google_doc_url: url, wp_status: status };
+
+      const res = await fetch(`${API}/post`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setStep('s1','done'); setStep('s2','done');
+        setStep('s3','done'); setStep('s4','done');
+        const label = status === 'publish' ? 'Published successfully' : 'Draft created successfully';
+        showResult('success', label, `"${data.title}" is ready in WordPress.`, data.wordpress_post_url);
+      } else {
+        setStep('s4', 'error');
+        showResult('error', 'Something went wrong', data.detail || 'Check the terminal for details.');
+      }
+
+    } catch (err) {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+      setStep('s1', 'error');
+      showResult('error', 'Could not reach the server', 'Make sure the API is running: python3 run.py');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Publish to WordPress →';
+  }
+
+  document.getElementById('doc-url').addEventListener('keydown', e => {
+    if (e.key === 'Enter') publishPost();
+  });
+</script>
+
+</body>
+</html>
